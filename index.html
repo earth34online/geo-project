@@ -319,11 +319,13 @@
                                 {
                                     id: "c2-2-1",
                                     title: "天气",
-                                    desc: ""
+                                    hideImage: true,
+                                    desc: "短时间、多变的阴晴风雨"
                                 },
                                 {
                                     id: "c2-2-2",
                                     title: "气候",
+                                    hideImage: true,
                                     desc: ""
                                 },
                                 {
@@ -359,6 +361,7 @@
                                         {
                                             id: "c2-2-4-4",
                                             title: "世界主要气候类型",
+                                            hideImage: true,
                                             desc: ""
                                         }
                                     ]
@@ -421,8 +424,7 @@
                         { 
                             id: "c3-2", 
                             title: "自然环境整体性", 
-                            img: "", 
-                            link: "" ,
+                            hideImage: true,
                             desc: "地形、气候、水文、土壤、植被等要素相互联系、相互制约"
                         }
                     ]
@@ -436,32 +438,54 @@
                             title: "中国地理", 
                             children: [
                                 {
-                                    id: "",
-                                    title: "",
-                                    img: "",
-                                    link: "",
-                                    desc: ""
+                                    id: "c4-1-1",
+                                    title: "北方地区",
+                                    children: [
+                                        {
+                                            id: "c4-1-1-1",
+                                            title: "东北",
+                                            img: "",
+                                            link: ""
+                                        },
+                                        {
+                                            id: "c4-1-1-2",
+                                            title: "华北",
+                                            img: "",
+                                            link: "",
+                                        }
+                                    ]
                                 },
                                 {
-                                    id: "",
-                                    title: "",
-                                    img: "",
-                                    link: "",
-                                    desc: ""
+                                    id: "c4-1-2",
+                                    title: "南方地区",
+                                    children: [
+                                        {
+                                            id: "c4-1-2-1",
+                                            title: "江南",
+                                            img: "",
+                                            link: "",
+                                        },
+                                        {
+                                            id: "c4-1-2-2",
+                                            title: "西南",
+                                            img: "",
+                                            link: "",
+                                        }
+                                    ]
                                 },
                                 {
-                                    id: "",
-                                    title: "",
+                                    id: "c4-1-3",
+                                    title: "西北地区",
                                     img: "",
                                     link: "",
-                                    desc: ""
+                                    desc: "雅丹地貌"
                                 },
                                 {
-                                    id: "",
-                                    title: "",
+                                    id: "c4-1-4",
+                                    title: "青藏地区",
                                     img: "",
                                     link: "",
-                                    desc: ""
+                                    desc: "青藏高原"
                                 }
                             ] 
                         },
@@ -470,11 +494,31 @@
                             title: "世界地理", 
                             children: [
                                 {
-                                    id: "",
-                                    title: "",
-                                    img: "",
-                                    link: "",
-                                    desc: ""
+                                    id: "c4-2-1",
+                                    title: "亚洲地区",
+                                    children: [
+                                        {
+                                            id: "c4-2-1-1",
+                                            title: "地形",
+                                            img: "",
+                                            link: "",
+                                            desc: "地势起伏大，中部高四周低"
+                                        },
+                                        {
+                                            id: "c4-2-1-2",
+                                            title: "水文",
+                                            img: "",
+                                            link: "",
+                                            desc: "河流呈放射状"
+                                        },
+                                        {
+                                            id: "c4-2-1-3",
+                                            title: "气候",
+                                            img: "",
+                                            link: "",
+                                            desc: "气候复杂多样，季风气候显著"
+                                        }
+                                    ]
                                 }
                             ]
                         }
@@ -531,13 +575,14 @@
                 });
                 stage.appendChild(grid);
 
-            } else {
+            }else {
                 // 渲染末端内容页
                 const detail = document.createElement('div');
                 detail.className = 'detail-view';
                 detail.innerHTML = `
-                    <h1 style="font-size:3rem; font-weight:normal; letter-spacing:8px; text-shadow:0 4px 15px rgba(255,255,255,0.4); transform:scaleY(1.05); display:inline-block;">${currentState.title}</h1>
+                    <h1 style="font-size:3rem; font-weight:normal; letter-spacing:2px; text-shadow:0 4px 15px rgba(255,255,255,0.4); transform:scaleY(1.15); display:inline-block;">${currentState.title}</h1>
                     
+                    ${currentState.hideImage ? '' : `
                     <div class="image-box">
                         <a href="${currentState.link || '#'}" target="_blank" style="display: block; width: 100%; height: 100%; text-decoration: none;">
                             ${currentState.img 
@@ -546,6 +591,7 @@
                             }
                         </a>
                     </div>
+                    `}
 
                     <div class="desc-text">
                         ${currentState.desc || '暂无解释性文字。请在代码的 desc 字段中输入内容。'}
