@@ -297,18 +297,36 @@
                             title: "地形地貌", 
                             children: [
                                 {
-                                    id: "",
-                                    title: "",
-                                    img: "",
-                                    link: "",
-                                    desc: ""
+                                    id: "c2-1-1",
+                                    title: "基本类型",
+                                    children: [
+                                        {
+                                            id: "c2-1-1-1",
+                                            title: "山地",
+                                            img: "",
+                                            link: "",
+                                        }
+                                    ]
                                 },
                                 {
-                                    id: "",
-                                    title: "",
-                                    img: "",
-                                    link: "",
-                                    desc: ""
+                                    id: "c2-1-2",
+                                    title: "形成力量",
+                                    children: [
+                                        {
+                                            id: "c2-1-2-1",
+                                            title: "内力作用(地球内部)",
+                                            img: "",
+                                            link: "",
+                                            desc: "塑造宏观格局，如板块运动（六大板块）带来的褶皱、断层、火山地震"
+                                        },
+                                        {
+                                            id: "c2-1-2-2",
+                                            title: "外力作用(太阳能、重力等)",
+                                            img: "",
+                                            link: "",
+                                            desc: "塑造地表细节，如流水（侵蚀峡谷、堆积平原）、风力、冰川的侵蚀与堆积作用"
+                                        }
+                                    ]
                                 }
                             ]
                         },
@@ -326,12 +344,12 @@
                                     id: "c2-2-2",
                                     title: "气候",
                                     hideImage: true,
-                                    desc: ""
+                                    desc: "长时间、稳定的天气特征"
                                 },
                                 {
                                     id: "c2-2-3",
                                     title: "气候要素",
-                                    desc: ""
+                                    desc: "气温（变化、分布）、降水（变化、分布）"
                                 },
                                 {
                                     id: "c2-2-4",
@@ -349,7 +367,7 @@
                                             title: "海陆位置",
                                             img: "",
                                             link: "",
-                                            desc: ""
+                                            desc: "影响降水和温差"
                                         },
                                         {
                                             id: "c2-2-4-3",
@@ -574,8 +592,7 @@
                     });
                 });
                 stage.appendChild(grid);
-
-            }else {
+            } else {
                 // 渲染末端内容页
                 const detail = document.createElement('div');
                 detail.className = 'detail-view';
@@ -593,9 +610,11 @@
                     </div>
                     `}
 
+                    ${currentState.desc ? `
                     <div class="desc-text">
-                        ${currentState.desc || '暂无解释性文字。请在代码的 desc 字段中输入内容。'}
+                        ${currentState.desc}
                     </div>
+                    ` : ''}
                 `;
                 stage.appendChild(detail);
                 gsap.from(detail, { duration: 1, opacity: 0, scale: 0.9, ease: "power2.out" });
