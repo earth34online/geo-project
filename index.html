@@ -142,6 +142,49 @@
             object-fit: cover;
         }
 
+        /* 新增：多图网格相册容器 */
+        .gallery-box {
+            width: 90%;
+            max-width: 1200px;
+            margin: 20px auto;
+            display: grid;
+            /* 核心魔法：根据屏幕宽度自动安排列数，每张图最小 300px 宽 */
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px; /* 图片之间的间距 */
+        }
+
+        .gallery-item {
+            height: 250px; /* 统一图片高度 */
+            background: #111;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 6px;
+            overflow: hidden;
+            display: block;
+            text-decoration: none;
+            transition: transform 0.4s, box-shadow 0.4s;
+        }
+
+        /* 鼠标悬停时的优雅浮起发光效果 */
+        .gallery-item:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 12px 25px rgba(255, 255, 255, 0.3);
+            border-color: rgba(255, 255, 255, 0.6);
+            z-index: 2;
+        }
+
+        .gallery-item img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            cursor: pointer;
+            transition: transform 0.6s;
+        }
+
+        /* 鼠标悬停时，图片本身微微放大 */
+        .gallery-item:hover img {
+            transform: scale(1.05);
+        }
+
         .placeholder-text {
             color: #444;
             /*font-family: monospace;*/
@@ -167,27 +210,22 @@
         }
 
         .desc-text {
-            /* 1. 往下移动一点：将上外边距改大（比如 50px） */
             margin: 50px auto 0 auto; 
-            width: 80%;
-            max-width: 800px;
+            width: 90%;
+            max-width: 1200px;
             
-            /* 2. 字体放大：从 1.1rem 改为 1.5rem (如果觉得还不够大可以改到 1.8rem) */
             font-size: 1.5rem; 
             line-height: 2; 
             color: rgba(255, 255, 255, 0.85); 
             
-            /* 3. 文本内容居中 */
             text-align: center; 
             letter-spacing: 2px;
             
-            /* 4. 提供边框和内部间距 */
             border: 1px solid rgba(255, 255, 255, 0.2); /* 半透明的白色边框 */
             border-radius: 8px; /* 边框圆角，看起来更柔和精致 */
             padding: 30px; /* 让文字和边框之间留出呼吸空间，避免文字贴着边框 */
             background: rgba(255, 255, 255, 0.03); /* 添加和卡片同款的极弱背景色，增加高级感 */
             
-            /* 保持原有的内部滚动功能 */
             max-height: 35vh; 
             overflow-y: auto; 
         }
@@ -221,10 +259,6 @@
         </main>
 
     <script>
-        /**
-         * 1. 完整数据接口 (按 Canva 层级填充)
-         * --------------------------------------------------
-         */
         const treeData = {
             id: "root",
             title: "自然地理知识",
@@ -240,8 +274,9 @@
                                 {
                                     id: "c1-1-1",
                                     title: "形状与大小",
-                                    img:"",
-                                    link: "",
+                                    gallery: [
+                                        { img: "图片链接1.jpg", link: "跳转链接1" },
+                                    ],
                                     desc:"不规则球体"
                                 },
                                 {
@@ -251,15 +286,17 @@
                                         {
                                             id: "c1-1-2-1",
                                             title: "自转",
-                                            img: "",
-                                            link: "",
+                                            gallery: [
+                                                { img: "图片链接1.jpg", link: "跳转链接1" },
+                                            ],
                                             desc: "自转方向：；自转周期：<br>产生昼夜交替和时间差异"
                                         },
                                         {
                                             id: "c1-1-2-2",
                                             title:"公转",
-                                            img: "",
-                                            link: "",
+                                            gallery: [
+                                                { img: "图片链接1.jpg", link: "跳转链接1" },
+                                            ],
                                             desc: "方向：；周期：<br>产生四季变化和五带划分<br>(热带、南北温带、南北寒带)"
                                         }
                                     ]
@@ -273,15 +310,17 @@
                                 {
                                     id: "c1-2-1",
                                     title: "三要素",
-                                    img: "",
-                                    link: "",
+                                    gallery: [
+                                        { img: "图片链接1.jpg", link: "跳转链接1" },
+                                    ],
                                     desc: "方向:一般指定向、指向标、经纬网<br>比例尺:公式、三种表示方式<br>小"
                                 },
                                 {
                                     id: "c1-2-2",
                                     title: "地形图",
-                                    img: "",
-                                    link: "",
+                                    gallery: [
+                                        { img: "图片链接1.jpg", link: "跳转链接1" },
+                                    ],
                                     desc: "地形图：学会判读等高线，识别山地、盆地、山脊、山谷、陡崖等地形部位"
                                 }
                             ]
@@ -303,32 +342,37 @@
                                         {
                                             id: "c2-1-1-1",
                                             title: "山地",
-                                            img: "",
-                                            link: "",
+                                            gallery: [
+                                                { img: "图片链接1.jpg", link: "跳转链接1" },
+                                            ],
                                         },
                                         {
                                             id: "c2-1-1-2",
                                             title: "高原",
-                                            img: "",
-                                            link: ""
+                                            gallery: [
+                                                { img: "图片链接1.jpg", link: "跳转链接1" },
+                                            ],
                                         },
                                         {
                                             id: "c2-1-1-3",
                                             title: "平原",
-                                            img: "",
-                                            link: ""
+                                            gallery: [
+                                                { img: "图片链接1.jpg", link: "跳转链接1" },
+                                            ],
                                         },
                                         {
                                             id: "c2-1-1-4",
                                             title: "盆地",
-                                            img: "",
-                                            link: ""
+                                            gallery: [
+                                                { img: "图片链接1.jpg", link: "跳转链接1" },
+                                            ],
                                         },
                                         {
                                             id: "c2-1-1-5",
                                             title: "丘陵",
-                                            img: "",
-                                            link: ""
+                                            gallery: [
+                                                { img: "图片链接1.jpg", link: "跳转链接1" },
+                                            ],
                                         }
                                     ]
                                 },
@@ -339,15 +383,17 @@
                                         {
                                             id: "c2-1-2-1",
                                             title: "内力作用(地球内部)",
-                                            img: "",
-                                            link: "",
+                                            gallery: [
+                                                { img: "图片链接1.jpg", link: "跳转链接1" },
+                                            ],
                                             desc: "塑造宏观格局，如板块运动（六大板块）带来的褶皱、断层、火山地震"
                                         },
                                         {
                                             id: "c2-1-2-2",
                                             title: "外力作用(太阳能、重力等)",
-                                            img: "",
-                                            link: "",
+                                            gallery: [
+                                                { img: "图片链接1.jpg", link: "跳转链接1" },
+                                            ],
                                             desc: "塑造地表细节，如流水（侵蚀峡谷、堆积平原）、风力、冰川的侵蚀与堆积作用"
                                         }
                                     ]
@@ -382,29 +428,32 @@
                                         {
                                             id: "c2-2-4-1",
                                             title: "维度位置",
-                                            img: "",
-                                            link: "",
+                                            gallery: [
+                                                { img: "图片链接1.jpg", link: "跳转链接1" },
+                                            ],
                                             desc: "决定气温基本格局"
                                         },
                                         {
                                             id: "c2-2-4-2",
                                             title: "海陆位置",
-                                            img: "",
-                                            link: "",
+                                            gallery: [
+                                                { img: "图片链接1.jpg", link: "跳转链接1" },
+                                            ],
                                             desc: "影响降水和温差"
                                         },
                                         {
                                             id: "c2-2-4-3",
                                             title: "地形因素",
-                                            img: "",
-                                            link: "",
+                                            gallery: [
+                                                { img: "图片链接1.jpg", link: "跳转链接1" },
+                                            ],
                                             desc: "海拔、迎风坡/背风坡"
                                         },
                                         {
                                             id: "c2-2-4-4",
                                             title: "世界主要气候类型",
                                             hideImage: true,
-                                            desc: ""
+                                            desc: "热带雨林、热带草原气候等<br>季风气候（亚洲最显著）：夏季高温多雨，冬季寒冷干燥<br>地中海气候、温带海洋性气候等"
                                         }
                                     ]
                                 }
@@ -417,15 +466,17 @@
                                 {
                                     id: "c2-3-1",
                                     title: "河流",
-                                    img: "",
-                                    link: "",
+                                    gallery: [
+                                        { img: "图片链接1.jpg", link: "跳转链接1" },
+                                    ],
                                     desc: "从流向、流量、汛期、含沙量等方面描述特征。<br>补给类型有雨水、冰雪融水等。"
                                 },
                                 {
                                     id: "c2-3-2",
                                     title: "湖泊",
-                                    img: "",
-                                    link: "",
+                                    gallery: [
+                                        { img: "图片链接1.jpg", link: "跳转链接1" },
+                                    ],
                                     desc: "区分淡水湖与咸水湖"
                                 }
                             ]
@@ -443,22 +494,25 @@
                                 {
                                     id: "c3-1-1",
                                     title: "海陆分布",
-                                    img: "",
-                                    link: "",
+                                    gallery: [
+                                        { img: "图片链接1.jpg", link: "跳转链接1" },
+                                    ],
                                     desc: "七大洲、四大洋的名称与轮廓"
                                 },
                                 {
                                     id: "c3-1-2",
                                     title: "海陆变迁",
-                                    img: "",
-                                    link: "",
+                                    gallery: [
+                                        { img: "图片链接1.jpg", link: "跳转链接1" },
+                                    ],
                                     desc: "原因（如板块运动）、证据"
                                 },
                                 {
                                     id: "c3-1-3",
                                     title: "水循环",
-                                    img: "",
-                                    link: "",
+                                    gallery: [
+                                        { img: "图片链接1.jpg", link: "跳转链接1" },
+                                    ],
                                     desc: "蒸发、水汽输送、降水、地表/地下径流等环节"
                                 }
                             ]
@@ -466,7 +520,9 @@
                         { 
                             id: "c3-2", 
                             title: "自然环境整体性", 
-                            hideImage: true,
+                            gallery: [
+                                { img: "图片链接1.jpg", link: "跳转链接1" },
+                            ],
                             desc: "地形、气候、水文、土壤、植被等要素相互联系、相互制约"
                         }
                     ]
@@ -486,14 +542,16 @@
                                         {
                                             id: "c4-1-1-1",
                                             title: "东北",
-                                            img: "",
-                                            link: ""
+                                            gallery: [
+                                                { img: "图片链接1.jpg", link: "跳转链接1" },
+                                            ],
                                         },
                                         {
                                             id: "c4-1-1-2",
                                             title: "华北",
-                                            img: "",
-                                            link: "",
+                                            gallery: [
+                                                { img: "图片链接1.jpg", link: "跳转链接1" },
+                                            ],
                                         }
                                     ]
                                 },
@@ -504,29 +562,33 @@
                                         {
                                             id: "c4-1-2-1",
                                             title: "江南",
-                                            img: "",
-                                            link: "",
+                                            gallery: [
+                                                { img: "图片链接1.jpg", link: "跳转链接1" },
+                                            ],
                                         },
                                         {
                                             id: "c4-1-2-2",
                                             title: "西南",
-                                            img: "",
-                                            link: "",
+                                            gallery: [
+                                                { img: "图片链接1.jpg", link: "跳转链接1" },
+                                            ],
                                         }
                                     ]
                                 },
                                 {
                                     id: "c4-1-3",
                                     title: "西北地区",
-                                    img: "",
-                                    link: "",
+                                    gallery: [
+                                        { img: "图片链接1.jpg", link: "跳转链接1" },
+                                    ],
                                     desc: "雅丹地貌"
                                 },
                                 {
                                     id: "c4-1-4",
                                     title: "青藏地区",
-                                    img: "",
-                                    link: "",
+                                    gallery: [
+                                        { img: "图片链接1.jpg", link: "跳转链接1" },
+                                    ],
                                     desc: "青藏高原"
                                 }
                             ] 
@@ -542,25 +604,160 @@
                                         {
                                             id: "c4-2-1-1",
                                             title: "地形",
-                                            img: "",
-                                            link: "",
+                                            gallery: [
+                                                { img: "图片链接1.jpg", link: "跳转链接1" },
+                                            ],
                                             desc: "地势起伏大，中部高四周低"
                                         },
                                         {
                                             id: "c4-2-1-2",
                                             title: "水文",
-                                            img: "",
-                                            link: "",
+                                            gallery: [
+                                                { img: "图片链接1.jpg", link: "跳转链接1" },
+                                            ],
                                             desc: "河流呈放射状"
                                         },
                                         {
                                             id: "c4-2-1-3",
                                             title: "气候",
-                                            img: "",
-                                            link: "",
+                                            gallery: [
+                                                { img: "图片链接1.jpg", link: "跳转链接1" },
+                                            ],
                                             desc: "气候复杂多样，季风气候显著"
                                         }
                                     ]
+                                },
+                                {
+                                    id: "c4-2-2",
+                                    title: "非洲地区",
+                                    children: [
+                                        {
+                                            id: "c4-2-2-1",
+                                            title: "地形",
+                                            gallery: [
+                                                { img: "图片链接1.jpg", link: "跳转链接1" },
+                                            ],
+                                            desc: "东南高，西北低"
+                                        },
+                                        {
+                                            id: "c4-2-2-2",
+                                            title: "气候",
+                                            gallery: [
+                                                { img: "图片链接1.jpg", link: "跳转链接1" },
+                                            ],
+                                            desc: "以热带气候为主，气候类型呈南北对称分布"
+                                        }
+                                    ]
+                                },
+                                {
+                                    id: "c4-2-3",
+                                    title: "欧洲地区",
+                                    children: [
+                                        {
+                                            id: "c4-2-3-1",
+                                            title: "地形",
+                                            gallery: [
+                                                { img: "图片链接1.jpg", link: "跳转链接1" },
+                                            ],
+                                            desc: "以平原为主，是世界平均海拔最低的大洲<br>中部高，有阿尔卑斯山脉"
+                                        },
+                                        {
+                                            id: "c4-2-3-2",
+                                            title: "气候",
+                                            gallery: [
+                                                { img: "图片链接1.jpg", link: "跳转链接1" },
+                                            ],
+                                            desc: "温带海洋性气候和地中海气候分布广泛,同时也有温带大陆性气候和亚寒带针叶林气候"
+                                        }
+                                    ]
+                                },
+                                {
+                                    id:"c4-2-4",
+                                    title: "美洲地区",
+                                    children: [
+                                    {
+                                        id: "c4-2-4",
+                                        title: "北美洲地区",
+                                        children: [
+                                            {
+                                                id: "c4-2-4-1",
+                                                title: "地形",
+                                                gallery: [
+                                                    { img: "图片链接1.jpg", link: "跳转链接1" },
+                                                ],
+                                                desc: "分为三大南北纵列带，西部山地、中部平原、东部高原山地。"
+                                            },
+                                            {
+                                                id: "c4-2-4-2",
+                                                title: "气候",
+                                                gallery: [
+                                                    { img: "图片链接1.jpg", link: "跳转链接1" },
+                                                ],
+                                                desc: "气候复杂多样，以温带大陆性气候为主<br>南部有热带气候分布"
+                                            },
+                                            {
+                                                id: "c4-2-4-3",
+                                                title: "水文",
+                                                gallery: [
+                                                    { img: "图片链接1.jpg", link: "跳转链接1" },
+                                                ],
+                                                desc: "主要有密西西比河，是世界第四长河"
+                                            }
+                                        ]
+                                    },
+                                    {
+                                        id: "c4-2-5",
+                                        title: "南美洲地区",
+                                        children: [
+                                            {
+                                                id: "c4-2-5-1",
+                                                title: "地形",
+                                                gallery: [
+                                                    { img: "图片链接1.jpg", link: "跳转链接1" },
+                                                ],
+                                                desc: "西部是安第斯山脉，东部平原与高原相间分布"
+                                            },
+                                            {
+                                                id: "c4-2-3-2",
+                                                title: "气候",
+                                                gallery: [
+                                                    { img: "图片链接1.jpg", link: "跳转链接1" },
+                                                ],
+                                                desc: "以热带气候为主，是世界上最湿润的大洲"
+                                            }
+                                        ]
+                                    }
+                                    ]
+                                },
+                                {
+                                    id: "c4-2-6",
+                                    title: "大洋洲地区",
+                                    children: [
+                                        {
+                                            id: "c4-2-6-1",
+                                            title: "澳大利亚大陆",
+                                            gallery: [
+                                                { img: "图片链接1.jpg", link: "跳转链接1" },
+                                            ],
+                                            desc: "地形：三大地形区——东部山地（大分水岭）、中部平原（大自流盆地）、西部高原<br>气候：呈半环状分布，干旱面积广，热带沙漠、热带草原气候为主<br>特色：大堡礁（世界最大珊瑚礁群）、特有动物（袋鼠、考拉、鸭嘴兽）"
+                                        },
+                                        {
+                                            id: "c4-2-3-2",
+                                            title: "新西兰",
+                                            gallery: [
+                                                { img: "图片链接1.jpg", link: "跳转链接1" },
+                                            ],
+                                            desc: "地形：多山地丘陵，火山、温泉广布<br>气候：温带海洋性气候，畜牧业发达"
+                                        }
+                                    ]
+                                },
+                                {
+                                    id: "c4-2-7",
+                                    title: "南极洲地区",
+                                    gallery: [
+                                        { img: "图片链接1.jpg", link: "跳转链接1" },
+                                    ],
+                                    desc: "地形：平均海拔最高的大洲，覆盖巨厚冰层，有“冰雪高原”之称<br>气候：酷寒、干燥、烈风，是世界最冷、风力最强的大洲<br>科考：中国建有长城站、中山站、昆仑站、泰山站<br>资源：淡水资源（冰川）、矿产（煤、铁）、海洋生物资源丰富"
                                 }
                             ]
                         }
@@ -609,7 +806,7 @@
                     gsap.from(card, {
                         duration: 1,
                         opacity: 0,
-                        y: 100,
+                        y: 80,
                         rotateX: -45,
                         delay: index * 0.1,
                         ease: "power4.out"
@@ -667,9 +864,6 @@
             }
         }
 
-        /**
-         * 3. 华丽背景动画 (Canvas)
-         */
         const canvas = document.getElementById('canvas-bg');
         const ctx = canvas.getContext('2d');
         let particles = [];
@@ -708,7 +902,6 @@
         initCanvas();
         animate();
         
-        // 首次加载
         render();
 
     </script>
