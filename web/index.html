@@ -1,0 +1,1052 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>自然地理知识交互系统</title>
+    <link rel="manifest" href="./manifest.json">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    
+    <style>
+        :root {
+            --bg-color: #000000;
+            --text-color: #ffffff;
+            --accent-glow: rgba(255, 255, 255, 0.8);
+            --card-bg: rgba(255, 255, 255, 0.03);
+            --border-color: rgba(255, 255, 255, 0.2);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            font-family: 'SimSun', 'Songti SC', 'STSong', serif;
+            overflow: hidden;
+            /* 防止滚动条破坏华丽感 */
+            height: 100vh;
+            width: 100vw;
+        }
+
+        /* 华丽背景粒子 */
+        #canvas-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            z-index: -1;
+            filter: blur(1px);
+        }
+
+        /* 顶部导航 */
+        #nav-header {
+            position: fixed;
+            top: 40px;
+            width: 100%;
+            padding: 0 50px;
+            display: flex;
+            justify-content: space-between;
+            z-index: 100;
+            opacity: 0;
+        }
+
+        .back-btn {
+            background: none;
+            border: 1px solid var(--border-color);
+            color: white;
+            padding: 10px 20px;
+            cursor: pointer;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            transition: 0.3s;
+        }
+
+        .back-btn:hover {
+            background: white;
+            color: black;
+        }
+
+        /* 主容器 */
+        #main-stage {
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            perspective: 2000px;
+        }
+
+        /* 首页大标题 */
+        .home-hero h1 {
+            font-size: 6rem;
+            letter-spacing: 20px;
+            text-align: center;
+            cursor: pointer;
+            font-weight: 200;
+            text-shadow: 0 0 30px rgba(255, 255, 255, 0.2);
+        }
+
+        /* 节点网格 */
+        .grid-container {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 30px;
+            width: 80%;
+            max-width: 1000px;
+            margin-top: -100px;
+        }
+
+        .node-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            padding: 100px 62px;
+            text-align: center;
+            cursor: pointer;
+            backdrop-filter: blur(10px);
+            transition: transform 0.6s cubic-bezier(0.23, 1, 0.32, 1), box-shadow 0.6s;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .node-card:hover {
+            background: rgba(255, 255, 255, 1);
+            color: black;
+            box-shadow: 0 0 50px rgba(255, 255, 255, 0.4);
+            transform: translateY(-10px) rotateX(10deg);
+        }
+
+        .node-card h2 {
+            font-size: 2.4rem;
+            font-weight: normal;
+            text-shadow: 0 4px 15px rgba(255, 255, 255, 0.4);
+            display: inline-block;
+            letter-spacing: 4px;
+            transform: scaleY(1.35);
+        }
+
+        /* 末级详情页面 */
+        .detail-view {
+            max-width: 900px;
+            width: 90%;
+            text-align: center;
+        }
+
+        .image-box {
+            width: 80%;
+            max-width: 500px;
+            height: 400px;
+            background: #111;
+            margin: 20px auto;
+            border: 1px solid #333;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            border-radius: 4px;
+            /* 可选：加一点点圆角让边缘不那么生硬 */
+        }
+
+        .image-box img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        /* 新增：多图网格相册容器 */
+        .gallery-box {
+            width: 90%;
+            max-width: 1200px;
+            margin: 20px auto;
+            display: grid;
+            /* 核心魔法：根据屏幕宽度自动安排列数，每张图最小 300px 宽 */
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            /* 图片之间的间距 */
+        }
+
+        .gallery-item {
+            height: 250px;
+            /* 统一图片高度 */
+            background: #111;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 6px;
+            overflow: hidden;
+            display: block;
+            text-decoration: none;
+            transition: transform 0.4s, box-shadow 0.4s;
+        }
+
+        /* 鼠标悬停时的优雅浮起发光效果 */
+        .gallery-item:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 12px 25px rgba(255, 255, 255, 0.3);
+            border-color: rgba(255, 255, 255, 0.6);
+            z-index: 2;
+        }
+
+        .gallery-item img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            cursor: pointer;
+            transition: transform 0.6s;
+        }
+
+        /* 鼠标悬停时，图片本身微微放大 */
+        .gallery-item:hover img {
+            transform: scale(1.05);
+        }
+
+        .placeholder-text {
+            color: #444;
+            /*font-family: monospace;*/
+            letter-spacing: 2px;
+        }
+
+        .link-anchor {
+            display: inline-block;
+            margin-top: 20px;
+            padding: 15px 60px;
+            border: 1px solid white;
+            color: white;
+            text-decoration: none;
+            font-size: 1.1rem;
+            letter-spacing: 4px;
+            transition: 0.4s;
+        }
+
+        .link-anchor:hover {
+            background: white;
+            color: black;
+            box-shadow: 0 0 30px white;
+        }
+
+        .desc-text {
+            margin: 50px auto 0 auto;
+            width: 90%;
+            max-width: 1200px;
+
+            font-size: 1.5rem;
+            line-height: 2;
+            color: rgba(255, 255, 255, 0.85);
+
+            text-align: center;
+            letter-spacing: 2px;
+
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            /* 半透明的白色边框 */
+            border-radius: 8px;
+            /* 边框圆角，看起来更柔和精致 */
+            padding: 30px;
+            /* 让文字和边框之间留出呼吸空间，避免文字贴着边框 */
+            background: rgba(255, 255, 255, 0.03);
+            /* 添加和卡片同款的极弱背景色，增加高级感 */
+
+            max-height: 35vh;
+            overflow-y: auto;
+        }
+
+        .desc-text::-webkit-scrollbar {
+            width: 4px;
+            /* 非常细的滚动条 */
+        }
+
+        .desc-text::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.05);
+            /* 透明轨道 */
+        }
+
+        .desc-text::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.2);
+            /* 半透明滑块 */
+            border-radius: 2px;
+        }
+
+        .desc-text::-webkit-scrollbar-thumb:hover {
+            background: rgba(255, 255, 255, 0.5);
+            /* 鼠标悬停时变亮 */
+        }
+        @media (max-width: 768px) {
+            body {
+                overflow-y: auto; 
+                height: auto;
+            }
+            
+            #main-stage {
+                height: auto;
+                min-height: 100vh;
+                padding: 70px 0 30px 0; 
+                align-items: flex-start; 
+            }
+
+            .home-hero {
+                margin: auto;
+            }
+
+            /* 详情页自动居中 */
+            .detail-view {
+                margin: auto;
+            }
+            .grid-container {
+                grid-template-columns: 1fr;
+                gap: 15px; 
+                width: 90%;
+                margin: 0 auto; 
+                margin-top: 20px; 
+                padding-bottom: 50px; 
+            }
+            .node-card {
+                padding: 40px 20px;
+            }
+            .node-card h2 {
+                font-size: 1.8rem;
+                letter-spacing: 2px;
+            }
+    
+            #nav-header {
+                padding: 0 15px;
+                top: 20px;
+            }
+            .back-btn {
+                padding: 8px 12px;
+                font-size: 0.8rem;
+            }
+            .detail-view h1 {
+                font-size: 2rem !important;
+            }
+            .gallery-box {
+                grid-template-columns: 1fr; /* 手机上单列显示图片 */
+            }
+            .gallery-item {
+                height: 200px;
+            }
+            .desc-text {
+                font-size: 1.1rem;
+                padding: 15px;
+                width: 100%;
+                max-height: none; /* 手机上完全展开文字 */
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <canvas id="canvas-bg"></canvas>
+
+    <header id="nav-header">
+        <button class="back-btn" onclick="handleBack()">← BACK / 返回上级</button>
+        <div id="breadcrumb" style="font-weight: 200; letter-spacing: 2px; color: #666;"></div>
+    </header>
+
+    <main id="main-stage">
+    </main>
+
+    <script>
+        const treeData = {
+            id: "root",
+            title: "自然地理知识",
+            children: [
+                {
+                    id: "c1",
+                    title: "地球与地图",
+                    children: [
+                        {
+                            id: "c1-1",
+                            title: "地球",
+                            children: [
+                                {
+                                    id: "c1-1-1",
+                                    title: "形状与大小",
+                                    gallery: [
+                                        { img: "images/60.png", },
+                                    ],
+                                    desc: "不规则球体"
+                                },
+                                {
+                                    id: "c1-1-2",
+                                    title: "运动和影响",
+                                    children: [
+                                        {
+                                            id: "c1-1-2-1",
+                                            title: "自转",
+                                            gallery: [
+                                                { img: "images/60.png", },
+                                            ],
+                                            desc: "自转方向：绕地轴自西向东；自转周期：一天<br>产生昼夜交替和时间差异"
+                                        },
+                                        {
+                                            id: "c1-1-2-2",
+                                            title: "公转",
+                                            gallery: [
+                                                { img: "images/59.png", },
+                                            ],
+                                            desc: "周期：一年; <br>产生四季变化和五带划分<br>(热带、南北温带、南北寒带)"
+                                        }
+                                    ]
+                                }
+                            ]
+                        },
+                        {
+                            id: "c1-2",
+                            title: "地图",
+                            children: [
+                                {
+                                    id: "c1-2-1",
+                                    title: "三要素",
+                                    gallery: [
+                                        { img: "images/2.png", },
+                                    ],
+                                    desc: "方向:一般指定向、指向标、经纬网<br>比例尺:公式、三种表示方式<br>小"
+                                },
+                                {
+                                    id: "c1-2-2",
+                                    title: "地形图",
+                                    gallery: [
+                                        { img: "images/1.png", },
+                                    ],
+                                    desc: "地形图：学会判读等高线，识别山地、盆地、山脊、山谷、陡崖等地形部位"
+                                }
+                            ]
+                        }
+                    ]
+                },
+                {
+                    id: "c2",
+                    title: "陆地表层",
+                    children: [
+                        {
+                            id: "c2-1",
+                            title: "地形地貌",
+                            children: [
+                                {
+                                    id: "c2-1-1",
+                                    title: "基本类型",
+                                    children: [
+                                        {
+                                            id: "c2-1-1-1",
+                                            title: "山地",
+                                            gallery: [
+                                                { img: "images/38.png", link: "https://studio.tripo3d.ai/workspace/generate/mountain-landscape-with-winding-trail-green-hills-and-blue-sky-357d5e97-0170-465c-8406-99350385dbeb" },
+                                            ],
+                                        },
+                                        {
+                                            id: "c2-1-1-2",
+                                            title: "高原",
+                                            gallery: [
+                                                { img: "images/23.png", link: "https://studio.tripo3d.ai/workspace/generate/snowy-mountain-landscape-with-pine-forest-152b0684-5b74-4143-8340-8551513765bd" },
+                                            ],
+                                        },
+                                        {
+                                            id: "c2-1-1-3",
+                                            title: "平原",
+                                            gallery: [
+                                                { img: "images/13.png", link: "https://studio.tripo3d.ai/3d-model/4352b451-cfed-423b-bb57-e3698431bbbb?invite_code=WPMX5J" },
+                                            ],
+                                        },
+                                        {
+                                            id: "c2-1-1-4",
+                                            title: "盆地",
+                                            gallery: [
+                                                { img: "images/14.png", link: "https://studio.tripo3d.ai/3d-model/e5101789-0dfc-4955-a129-9f6a51466936?invite_code=WPMX5J" },
+                                            ],
+                                        },
+                                        {
+                                            id: "c2-1-1-5",
+                                            title: "丘陵",
+                                            gallery: [
+                                                { img: "images/15.png", link: "https://studio.tripo3d.ai/3d-model/d26fc5d4-f22d-467f-a8f1-f0a80eecac08?invite_code=WPMX5J" },
+                                            ],
+                                        }
+                                    ]
+                                },
+                                {
+                                    id: "c2-1-2",
+                                    title: "形成力量",
+                                    children: [
+                                        {
+                                            id: "c2-1-2-1",
+                                            title: "内力作用(地球内部)",
+                                            gallery: [
+                                                { img: "images/16.png", link: "https://studio.tripo3d.ai/3d-model/92e10adc-b041-4ed6-bd1b-b7031a44e4da?invite_code=WPMX5J" },
+                                            ],
+                                            desc: "塑造宏观格局，如板块运动（六大板块）带来的褶皱、断层、火山地震"
+                                        },
+                                        {
+                                            id: "c2-1-2-2",
+                                            title: "外力作用(太阳能、重力等)",
+                                            gallery: [
+                                                { img: "images/17.png", link: "https://studio.tripo3d.ai/3d-model/e5c1ec98-3898-4187-b89c-1f4d2a03493a?invite_code=WPMX5J" },
+                                            ],
+                                            desc: "塑造地表细节，如流水（侵蚀峡谷、堆积平原）、风力、冰川的侵蚀与堆积作用"
+                                        }
+                                    ]
+                                }
+                            ]
+                        },
+                        {
+                            id: "c2-2",
+                            title: "气候与天气",
+                            children: [
+                                {
+                                    id: "c2-2-1",
+                                    title: "天气",
+                                    hideImage: true,
+                                    desc: "短时间、多变的阴晴风雨"
+                                },
+                                {
+                                    id: "c2-2-2",
+                                    title: "气候",
+                                    hideImage: true,
+                                    desc: "长时间、稳定的天气特征"
+                                },
+                                {
+                                    id: "c2-2-3",
+                                    title: "气候要素",
+                                    desc: "气温（变化、分布）、降水（变化、分布）"
+                                },
+                                {
+                                    id: "c2-2-4",
+                                    title: "影响因素",
+                                    children: [
+                                        {
+                                            id: "c2-2-4-1",
+                                            title: "纬度位置",
+                                            gallery: [
+                                                { img: "images/18.png", link: "https://studio.tripo3d.ai/3d-model/e5c1ec98-3898-4187-b89c-1f4d2a03493a?invite_code=WPMX5J" },
+                                            ],
+                                            desc: "决定气温基本格局"
+                                        },
+                                        {
+                                            id: "c2-2-4-2",
+                                            title: "海陆位置",
+                                            gallery: [
+                                                { img: "images/3.png", },
+                                            ],
+                                            desc: "影响降水和温差"
+                                        },
+                                        {
+                                            id: "c2-2-4-3",
+                                            title: "地形因素",
+                                            gallery: [
+                                                { img: "images/19.png", link: "https://studio.tripo3d.ai/3d-model/29da9b7a-13ce-4ccb-8b0a-a20b524ccaa2?invite_code=WPMX5J" },
+                                            ],
+                                            desc: "海拔、迎风坡/背风坡"
+                                        },
+                                        {
+                                            id: "c2-2-4-4",
+                                            title: "世界主要气候类型",
+                                            hideImage: true,
+                                            desc: "热带雨林、热带草原气候等<br>季风气候（亚洲最显著）：夏季高温多雨，冬季寒冷干燥<br>地中海气候、温带海洋性气候等"
+                                        }
+                                    ]
+                                }
+                            ]
+                        },
+                        {
+                            id: "c2-3",
+                            title: "水文",
+                            children: [
+                                {
+                                    id: "c2-3-1",
+                                    title: "河流",
+                                    gallery: [
+                                        { img: "images/20.png", link: "https://studio.tripo3d.ai/3d-model/717cac54-f0da-4342-990f-b8aefc8e62d7?invite_code=WPMX5J" },
+                                    ],
+                                    desc: "从流向、流量、汛期、含沙量等方面描述特征。<br>补给类型有雨水、冰雪融水等。"
+                                },
+                                {
+                                    id: "c2-3-2",
+                                    title: "湖泊",
+                                    gallery: [
+                                        { img: "images/21.png", link: "https://studio.tripo3d.ai/3d-model/47f87b30-ca6e-440b-a5eb-fb13ced66772?invite_code=HJVKRX" },
+                                    ],
+                                    desc: "区分淡水湖与咸水湖"
+                                }
+                            ]
+                        }
+                    ]
+                },
+                {
+                    id: "c3",
+                    title: "地球系统",
+                    children: [
+                        {
+                            id: "c3-1",
+                            title: "海洋与水循环",
+                            children: [
+                                {
+                                    id: "c3-1-1",
+                                    title: "海陆分布",
+                                    gallery: [
+                                        { img: "images/4.png" },
+                                    ],
+                                    desc: "七大洲、四大洋的名称与轮廓"
+                                },
+                                {
+                                    id: "c3-1-2",
+                                    title: "海陆变迁",
+                                    gallery: [
+                                        { img: "images/5.png" },
+                                    ],
+                                    desc: "原因（如板块运动）、证据"
+                                },
+                                {
+                                    id: "c3-1-3",
+                                    title: "水循环",
+                                    gallery: [
+                                        { img: "images/10.png" },
+                                    ],
+                                    desc: "蒸发、水汽输送、降水、地表/地下径流等环节"
+                                }
+                            ]
+                        },
+                        {
+                            id: "c3-2",
+                            title: "自然环境整体性",
+                            gallery: [
+                                { img: "images/11.png" },
+                            ],
+                            desc: "地形、气候、水文、土壤、植被等要素相互联系、相互制约"
+                        }
+                    ]
+                },
+                {
+                    id: "c4",
+                    title: "区域自然地理",
+                    children: [
+                        {
+                            id: "c4-1",
+                            title: "中国地理",
+                            children: [
+                                {
+                                    id: "c4-1-1",
+                                    title: "北方地区",
+                                    children: [
+                                        {
+                                            id: "c4-1-1-1",
+                                            title: "东北",
+                                            gallery: [
+                                                { img: "images/22.png", link: "https://studio.tripo3d.ai/3d-model/7b262887-db7a-4c03-9358-5e7e935fd92e?invite_code=WPMX5J" },
+                                            ],
+                                        },
+                                        {
+                                            id: "c4-1-1-2",
+                                            title: "华北",
+                                            gallery: [
+                                                { img: "images/24.png", link: "https://studio.tripo3d.ai/workspace/generate/aerial-view-of-village-with-surrounding-farmland-and-fields-showing-r-c3f25127-e736-4bb4-961c-3f54a830bbaf" },
+                                            ],
+                                        }
+                                    ]
+                                },
+                                {
+                                    id: "c4-1-2",
+                                    title: "南方地区",
+                                    children: [
+                                        {
+                                            id: "c4-1-2-1",
+                                            title: "江南",
+                                            gallery: [
+                                                { img: "images/26.png", link: "https://studio.tripo3d.ai/workspace/generate/canal-street-in-a-chinese-water-town-with-cherry-blossom-tree-white-w-57126ba7-db42-44f8-8541-62ac944425c3" },
+                                            ],
+                                        },
+                                        {
+                                            id: "c4-1-2-2",
+                                            title: "西南",
+                                            gallery: [
+                                                { img: "images/25.png", link: "https://studio.tripo3d.ai/workspace/generate/green-terraced-fields-with-karst-mountains-in-a-lush-valley-d0871685-dfd4-4a20-95bc-47200f1e3b2e" },
+                                            ],
+                                        }
+                                    ]
+                                },
+                                {
+                                    id: "c4-1-3",
+                                    title: "西北地区",
+                                    gallery: [
+                                        { img: "images/27.png", link: "https://studio.tripo3d.ai/workspace/generate/rock-formations-in-desert-at-sunset-with-distant-balloons-0afc0312-0d2c-4df9-b53e-619507258635" },
+                                    ],
+                                    desc: "雅丹地貌"
+                                },
+                                {
+                                    id: "c4-1-4",
+                                    title: "青藏地区",
+                                    gallery: [
+                                        { img: "images/28.png", link: "https://studio.tripo3d.ai/workspace/generate/snowy-mountain-range-with-green-foothills-under-blue-sky-09effa2b-575e-4a76-b419-56205a4865cd" },
+                                    ],
+                                    desc: "青藏高原"
+                                }
+                            ]
+                        },
+                        {
+                            id: "c4-2",
+                            title: "世界地理",
+                            children: [
+                                {
+                                    id: "c4-2-1",
+                                    title: "亚洲地区",
+                                    children: [
+                                        {
+                                            id: "c4-2-1-1",
+                                            title: "地形",
+                                            gallery: [
+                                                { img: "images/6.png", },
+                                            ],
+                                            desc: "地势起伏大，中部高四周低"
+                                        },
+                                        {
+                                            id: "c4-2-1-2",
+                                            title: "水文",
+                                            gallery: [
+                                                { img: "images/8.png", },
+                                            ],
+                                            desc: "河流呈放射状"
+                                        },
+                                        {
+                                            id: "c4-2-1-3",
+                                            title: "气候",
+                                            gallery: [
+                                                { img: "images/7.png", },
+                                            ],
+                                            desc: "气候复杂多样，季风气候显著"
+                                        }
+                                    ]
+                                },
+                                {
+                                    id: "c4-2-2",
+                                    title: "非洲地区",
+                                    children: [
+                                        {
+                                            id: "c4-2-2-1",
+                                            title: "地形",
+                                            gallery: [
+                                                { img: "images/33.jpg", link: "https://studio.tripo3d.ai/workspace/generate/savanna-landscape-with-acacia-trees-and-distant-mountain-8a6e073b-1494-454d-904b-f3208b40f85a" },
+                                                { img: "images/39.jpg", link: "https://studio.tripo3d.ai/workspace/generate/winding-river-through-dense-tropical-rainforest-viewed-from-above-16076f38-d9ba-4e27-8799-268f123afbb1" },
+                                            ],
+                                            desc: "东南高，西北低"
+                                        },
+                                        {
+                                            id: "c4-2-2-2",
+                                            title: "气候",
+                                            gallery: [
+                                                { img: "images/33.jpg", link: "https://studio.tripo3d.ai/workspace/generate/savanna-landscape-with-acacia-trees-and-distant-mountain-8a6e073b-1494-454d-904b-f3208b40f85a" },
+                                                { img: "images/39.jpg", link: "https://studio.tripo3d.ai/3d-model/16076f38-d9ba-4e27-8799-268f123afbb1?invite_code=YPXC04" },
+                                                { img: "images/50.jpg", link: "https://studio.tripo3d.ai/workspace/generate/camel-caravan-walking-through-desert-dunes-with-palm-trees-23129899-2c50-4494-8bfd-c8a028442bac" },
+                                            ],
+                                            desc: "以热带气候为主，气候类型呈南北对称分布"
+                                        }
+                                    ]
+                                },
+                                {
+                                    id: "c4-2-3",
+                                    title: "欧洲地区",
+                                    children: [
+                                        { 
+                                            id: "c4-2-3-1",
+                                            title: "地形",
+                                            gallery: [
+                                                { img: "images/53.jpg", link: "https://studio.tripo3d.ai/3d-model/9ad62d59-6846-4634-a4ce-b60d0bb46c71?invite_code=WPMX5J" },
+                                                { img: "images/58.jpg", link: "https://studio.tripo3d.ai/3d-model/216f6130-92fb-417b-9b6d-f966ce3c26be?invite_code=" },
+                                            ],
+                                            desc: "以平原为主，是世界平均海拔最低的大洲<br>中部高，有阿尔卑斯山脉"
+                                        },
+                                        {
+                                            id: "c4-2-3-2",
+                                            title: "气候",
+                                            gallery: [
+                                                { img: "images/53.jpg", link: "https://studio.tripo3d.ai/3d-model/9ad62d59-6846-4634-a4ce-b60d0bb46c71?invite_code=WPMX5J" },
+                                                { img: "images/52.jpg", link: "https://studio.tripo3d.ai/workspace/generate/seaside-town-along-the-coast-with-white-apartment-buildings-on-a-hills-34430ccb-7b60-4875-9891-99f5f0d2b7f0" },
+                                                { img: "images/35.jpg", link: "https://studio.tripo3d.ai/workspace/generate/red-brick-cathedral-with-white-trim-and-green-spires-in-moscow-skyline-61f9ea55-7152-41d9-a1f0-3c83e00cb692" },
+                                                { img: "images/32.png", link: "https://studio.tripo3d.ai/workspace/generate/snowy-mountain-village-along-icy-coastline-with-calm-water-c3e06a27-0e26-45ce-b458-82febb08f9c0" },
+                                            ],
+                                            desc: "温带海洋性气候和地中海气候分布广泛,同时也有温带大陆性气候和亚寒带针叶林气候"
+                                        }
+                                    ]
+                                },
+                                {
+                                    id: "c4-2-4",
+                                    title: "美洲地区",
+                                    children: [
+                                        {
+                                            id: "c4-2-4",
+                                            title: "北美洲地区",
+                                            children: [
+                                                {
+                                                    id: "c4-2-4-1",
+                                                    title: "地形",
+                                                    gallery: [
+                                                        { img: "images/41.jpg", link: "https://studio.tripo3d.ai/workspace/generate/desert-valley-cityscape-with-roads-palm-trees-and-low-rise-buildings-a34d614b-8510-4c3d-b4a3-0fa367f7a7a4" },
+                                                    ],
+                                                    desc: "分为三大南北纵列带，西部山地、中部平原、东部高原山地。"
+                                                },
+                                                {
+                                                    id: "c4-2-4-2",
+                                                    title: "气候",
+                                                    gallery: [
+                                                        { img: "images/42.jpg", link: "https://studio.tripo3d.ai/workspace/generate/winding-road-through-autumn-forest-with-orange-and-red-foliage-paved-458ae7e7-f1d7-4d3b-8e59-6b53e0ef8136" },
+                                                        { img: "images/44.jpg", link: "https://studio.tripo3d.ai/workspace/generate/cathedral-with-domed-roof-and-twin-towers-perched-over-a-sunlit-hillsi-1cfa18fe-4e8f-45bc-9b3c-1f0631f27b8e" },
+                                                    ],
+                                                    desc: "气候复杂多样，以温带大陆性气候为主<br>南部有热带气候分布"
+                                                },
+                                                {
+                                                    id: "c4-2-4-3",
+                                                    title: "水文",
+                                                    gallery: [
+                                                        { img: "images/43.jpg", link: "https://studio.tripo3d.ai/workspace/generate/autumn-forest-river-landscape-7c4fa220-a175-466e-a495-a5bde75f70b0" },
+                                                    ],
+                                                    desc: "主要有密西西比河，是世界第四长河"
+                                                }
+                                            ]
+                                        },
+                                        {
+                                            id: "c4-2-5",
+                                            title: "南美洲地区",
+                                            children: [
+                                                {
+                                                    id: "c4-2-5-1",
+                                                    title: "地形",
+                                                    gallery: [
+                                                        { img: "images/29.jpg", link: "https://studio.tripo3d.ai/workspace/generate/sea-stacks-along-a-sandy-coastline-with-tall-sandstone-cliffs-and-wave-8732f9a8-2b81-4507-b3a1-ee5e48fc7ccf" },
+                                                        { img: "images/31.jpg", link: "https://studio.tripo3d.ai/workspace/generate/christ-the-redeemer-statue-with-outstretched-arms-overlooking-rio-de-j-24d7063a-748f-4554-91f4-41583a95924c" },
+                                                    ],
+                                                    desc: "西部是安第斯山脉，东部平原与高原相间分布"
+                                                },
+                                                {
+                                                    id: "c4-2-3-2",
+                                                    title: "气候",
+                                                    gallery: [
+                                                        { img: "images/12.png", },
+                                                    ],
+                                                    desc: "以热带气候为主，是世界上最湿润的大洲"
+                                                }
+                                            ]
+                                        }
+                                    ]
+                                },
+                                {
+                                    id: "c4-2-6",
+                                    title: "大洋洲地区",
+                                    children: [
+                                        {
+                                            id: "c4-2-6-1",
+                                            title: "澳大利亚大陆",
+                                            gallery: [
+                                                { img: "images/30.jpg", link: "https://studio.tripo3d.ai/3d-model/3c9ae037-d95a-4c72-9455-d8a86394e532?invite_code=WPMX5J" },
+                                            ],
+                                            desc: "地形：三大地形区——东部山地（大分水岭）、中部平原（大自流盆地）、西部高原<br>气候：呈半环状分布，干旱面积广，热带沙漠、热带草原气候为主<br>特色：大堡礁（世界最大珊瑚礁群）、特有动物（袋鼠、考拉、鸭嘴兽）"
+                                        },
+                                        {
+                                            id: "c4-2-3-2",
+                                            title: "新西兰",
+                                            gallery: [
+                                                { img: "images/9.png" },
+                                            ],
+                                            desc: "地形：多山地丘陵，火山、温泉广布<br>气候：温带海洋性气候，畜牧业发达"
+                                        }
+                                    ]
+                                },
+                                {
+                                    id: "c4-2-7",
+                                    title: "南极洲地区",
+                                    gallery: [
+                                        { img: "images/45.jpg", link: "https://studio.tripo3d.ai/workspace/generate/snowy-mountain-range-with-snow-covered-peaks-rocky-outcrops-and-calm-b8093aaa-52b0-462c-8801-690cc0f131de" },
+                                    ],
+                                    desc: "地形：平均海拔最高的大洲，覆盖巨厚冰层，有“冰雪高原”之称<br>气候：酷寒、干燥、烈风，是世界最冷、风力最强的大洲<br>科考：中国建有长城站、中山站、昆仑站、泰山站<br>资源：淡水资源（冰川）、矿产（煤、铁）、海洋生物资源丰富"
+                                }
+                            ]
+                        }
+                    ]
+                }
+            ]
+        };
+
+        // 状态管理
+        let currentState = treeData;
+        let historyStack = [];
+        const stage = document.getElementById('main-stage');
+        const header = document.getElementById('nav-header');
+
+        /**
+         * 2. 核心渲染逻辑
+         */
+        function render() {
+            stage.innerHTML = '';
+
+            // 更新面包屑和返回按钮
+            header.style.opacity = currentState.id === 'root' ? 0 : 1;
+            document.getElementById('breadcrumb').innerText = historyStack.map(i => i.title).join(' / ');
+
+            if (currentState.id === "root") {
+                // 渲染首页
+                const div = document.createElement('div');
+                div.className = 'home-hero';
+                div.innerHTML = `<h1>${currentState.title}</h1>`;
+                div.onclick = () => navigateTo(currentState);
+                stage.appendChild(div);
+                gsap.from(div, { duration: 2, opacity: 0, y: 50, ease: "expo.out" });
+
+            } else if (currentState.children && currentState.children.length > 0) {
+                // 渲染分支层级 (Grid 布局)
+                const grid = document.createElement('div');
+                grid.className = 'grid-container';
+
+                currentState.children.forEach((item, index) => {
+                    const card = document.createElement('div');
+                    card.className = 'node-card';
+                    card.innerHTML = `<h2>${item.title}</h2>`;
+                    card.onclick = () => navigateTo(item);
+                    grid.appendChild(card);
+
+                    gsap.from(card, {
+                        duration: 1,
+                        opacity: 0,
+                        y: 80,
+                        rotateX: -45,
+                        delay: index * 0.1,
+                        ease: "power4.out"
+                    });
+                });
+                stage.appendChild(grid);
+
+            } else {
+                // 渲染末端内容页
+                const detail = document.createElement('div');
+                detail.className = 'detail-view';
+
+                // 兼容旧字段 img/link，也兼容你现在主要在用的 gallery
+                const gallery = Array.isArray(currentState.gallery) ? currentState.gallery : [];
+                const firstImage = gallery[0] || null;
+                const fallbackImg = currentState.img || '';
+                const fallbackLink = currentState.link || '#';
+
+                let mediaHTML = '';
+
+                if (!currentState.hideImage) {
+                    // 多图：使用你原本已经写好的 gallery 样式
+                    if (gallery.length > 1) {
+                        mediaHTML = `
+                    <div class="gallery-box">
+                        ${gallery.map(item => `
+                            <a 
+                                class="gallery-item" 
+                                href="${item.link || '#'}" 
+                                target="_blank" 
+                                style="text-decoration:none;"
+                            >
+                                ${item.img
+                                ? `<img src="${item.img}" alt="${currentState.title}" style="width:100%; height:100%; object-fit:cover; display:block;">`
+                                : `<div class="placeholder-text" style="width:100%; height:100%; display:flex; align-items:center; justify-content:center;">[ IMAGE INTERFACE: ${currentState.title} ]</div>`
+                            }
+                            </a>
+                        `).join('')}
+                    </div>
+                `;
+                    } else {
+                        // 单图：保持你原来 image-box 的展示方式
+                        const finalImg = firstImage?.img || fallbackImg;
+                        const finalLink = firstImage?.link || fallbackLink;
+
+                        mediaHTML = `
+                    <div class="image-box">
+                        <a href="${finalLink}" target="_blank" style="display: block; width: 100%; height: 100%; text-decoration: none;">
+                            ${finalImg
+                                ? `<img src="${finalImg}" style="cursor: pointer; width: 100%; height: 100%; object-fit: cover;">`
+                                : `<div class="placeholder-text" style="cursor: pointer; height: 100%; display: flex; align-items: center; justify-content: center;">[ IMAGE INTERFACE: ${currentState.title} ]</div>`
+                            }
+                        </a>
+                    </div>
+                `;
+                    }
+                }
+
+                detail.innerHTML = `
+            <h1 style="font-size:3rem; font-weight:normal; letter-spacing:2px; text-shadow:0 4px 15px rgba(255,255,255,0.4); transform:scaleY(1.15); display:inline-block;">
+                ${currentState.title}
+            </h1>
+            
+            ${mediaHTML}
+
+            ${currentState.desc ? `
+            <div class="desc-text">
+                ${currentState.desc}
+            </div>
+            ` : ''}
+        `;
+
+                stage.appendChild(detail);
+                gsap.from(detail, { duration: 1, opacity: 0, scale: 0.9, ease: "power2.out" });
+            }
+        }
+
+        function navigateTo(node) {
+            // 如果是首页点击，我们实际上是想进入它的 children 层级
+            const nextTarget = (node.id === 'root') ? { ...node, id: 'first_level' } : node;
+
+            gsap.to(stage, {
+                duration: 0.5, opacity: 0, scale: 1.1, onComplete: () => {
+                    historyStack.push(currentState);
+                    currentState = nextTarget;
+                    render();
+                    gsap.to(stage, { duration: 0.5, opacity: 1, scale: 1 });
+                }
+            });
+        }
+
+        function handleBack() {
+            if (historyStack.length > 0) {
+                gsap.to(stage, {
+                    duration: 0.5, opacity: 0, scale: 0.9, onComplete: () => {
+                        currentState = historyStack.pop();
+                        render();
+                        gsap.to(stage, { duration: 0.5, opacity: 1, scale: 1 });
+                    }
+                });
+            }
+        }
+
+        const canvas = document.getElementById('canvas-bg');
+        const ctx = canvas.getContext('2d');
+        let particles = [];
+
+        function initCanvas() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+            particles = [];
+            for (let i = 0; i < 80; i++) {
+                particles.push({
+                    x: Math.random() * canvas.width,
+                    y: Math.random() * canvas.height,
+                    size: Math.random() * 2,
+                    speedX: Math.random() * 0.2 - 0.1,
+                    speedY: Math.random() * 0.2 - 0.1
+                });
+            }
+        }
+
+        function animate() {
+            ctx.fillStyle = 'rgba(0,0,0,0.05)';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            ctx.fillStyle = '#fff';
+            particles.forEach(p => {
+                p.x += p.speedX; p.y += p.speedY;
+                if (p.x < 0 || p.x > canvas.width) p.speedX *= -1;
+                if (p.y < 0 || p.y > canvas.height) p.speedY *= -1;
+                ctx.beginPath();
+                ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+                ctx.fill();
+            });
+            requestAnimationFrame(animate);
+        }
+
+        window.addEventListener('resize', initCanvas);
+        initCanvas();
+        animate();
+
+        render();
+
+    </script>
+</body>
+
+</html>
