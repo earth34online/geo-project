@@ -333,6 +333,19 @@
     </style>
 </head>
 
+<script>
+    // 自动拦截所有超链接，强制外部浏览器打开
+    document.addEventListener('DOMContentLoaded', function() {
+        var links = document.querySelectorAll('a');
+        links.forEach(function(link) {
+            if (link.host !== window.location.host) {
+                link.setAttribute('target', '_blank');
+                link.setAttribute('rel', 'noopener noreferrer');
+            }
+        });
+    });
+</script>
+
 <body>
 
     <canvas id="canvas-bg"></canvas>
